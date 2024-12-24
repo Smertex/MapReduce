@@ -22,7 +22,7 @@ public class MapWorker implements Worker {
 
     private String endPath;
 
-    private Map<String, Integer> wordMap;
+    private final Map<String, Integer> wordMap;
 
     @Override
     public void run() {
@@ -47,17 +47,16 @@ public class MapWorker implements Worker {
 
     private void writeMapInFile(){
         mapFeeling();
-        wordMap.keySet().forEach(word -> {
-            writeWordInMap(word, wordMap.get(word));
-        });
+        wordMap.keySet().forEach(word -> writeWordInMap(word, wordMap.get(word)));
+        wordMap.clear();
     }
 
     @SuppressWarnings("all")
     private void writeWordInMap(String word, Integer count){
         Path file = Path.of(endPath + "/" + taskId.toString() + "/" + hashCodeGenerate(word) + ".txt");
-        try(FileChannel fileChannel = FileChannel.open(file, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND);){
-            String input = word + ":" + count.toString() + "\n";
-            fileChannel.write(ByteBuffer.wrap(input.getBytes()));
+        try(FileChannel fileChannel = FileChannel.open(file, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND)){
+            fileChannel.lock();
+            fileChannel.write(ByteBuffer.wrap((word + ":" + count.toString() + "\n").getBytes()));
         } catch (IOException e) {
             throw new WriteToFileException(e.getMessage());
         }

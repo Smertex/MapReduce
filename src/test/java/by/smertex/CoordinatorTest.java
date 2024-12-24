@@ -2,6 +2,7 @@ package by.smertex;
 
 import by.smertex.coordinator.interfaces.Coordinator;
 import by.smertex.coordinator.realisation.CoordinatorIml;
+import org.junit.jupiter.api.Test;
 
 public class CoordinatorTest {
 
@@ -9,8 +10,9 @@ public class CoordinatorTest {
 
     private final Coordinator coordinator = new CoordinatorIml(10);
 
-    void mapTest(){
+    @Test
+    void mapTest() throws InterruptedException {
         coordinator.map(START_TEST);
+        Thread.sleep(10000);
     }
-
 }
