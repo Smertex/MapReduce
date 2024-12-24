@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MapMapWorkerImpl implements MapWorker {
+public class MapWorkerImpl implements MapWorker {
 
     private static final String CLEAN = "[^a-zA-Zа-яА-Я0-9\\s]";
 
@@ -87,7 +87,7 @@ public class MapMapWorkerImpl implements MapWorker {
         this.endPath = endPath;
     }
 
-    public MapMapWorkerImpl(UUID taskId, String content, String endPath) {
+    public MapWorkerImpl(UUID taskId, String content, String endPath) {
         this.taskId = taskId;
         this.content = content;
         this.endPath = endPath;

@@ -21,16 +21,6 @@ public class MapReduceImpl implements MapReduce {
         }
     }
 
-    @Override
-    public boolean up(UUID taskId, String finalFile) {
-        try {
-            coordinatorIml.reduce(taskId, finalFile);
-            return true;
-        } catch (Exception e){
-            return false;
-        }
-    }
-
     public MapReduceImpl() {
         coordinatorIml = new CoordinatorIml(10);
     }

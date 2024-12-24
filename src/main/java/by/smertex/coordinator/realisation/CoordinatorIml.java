@@ -1,24 +1,30 @@
 package by.smertex.coordinator.realisation;
 
+import by.smertex.coordinator.exception.CoordinatorException;
 import by.smertex.coordinator.interfaces.Coordinator;
 import by.smertex.reduce.exeception.ReadFileException;
-import by.smertex.worker.realisation.MapMapWorkerImpl;
+import by.smertex.worker.realisation.MapWorkerImpl;
+import by.smertex.worker.realisation.ReduceWorkerImpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.concurrent.Executor;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CoordinatorIml implements Coordinator {
 
     private static final String PROXY_PACKAGE = "proxy";
 
-    private final Executor executor;
+    private final ExecutorService executor;
 
     private final int threadCount;
 
@@ -34,11 +40,65 @@ public class CoordinatorIml implements Coordinator {
 
     @Override
     public void reduce(UUID processId, String finalFile) {
+        reduceAllocator(processId, finalFile);
+    }
 
+    private void reduceAllocator(UUID processId, String finalFile){
+        List<List<String>> listsForThread = reduceSpliterator(PROXY_PACKAGE + "/" + processId);
+        CountDownLatch countDownLatch = new CountDownLatch(listsForThread.size());
+        listsForThread.forEach(list -> {
+            executor.execute(() -> {
+                try{
+                    new ReduceWorkerImpl(list, finalFile).run();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        });
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            throw new CoordinatorException(e.getMessage());
+        }
+    }
+
+    private List<List<String>> reduceSpliterator(String path){
+        List<List<String>> listsForThread = new ArrayList<>();
+        try(Stream<Path> stream = Files.walk(Path.of(path))) {
+            List<String> files = stream.filter(Files::isRegularFile)
+                    .map(Path::toString)
+                    .collect(Collectors.toList());
+            int pointer = 0;
+            int count = files.size() / threadCount;
+            for(int i = 0; i < threadCount; i++) {
+                int start = pointer;
+                List<String> list = new ArrayList<>();
+                for (int j = start; j < count + start; j++, pointer++) {
+                    list.add(files.get(j));
+                }
+                listsForThread.add(list);
+            }
+            return listsForThread;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void mapAllocator(UUID taskId, List<String> words) {
-        words.forEach(word -> executor.execute(() -> new MapMapWorkerImpl(taskId, word, PROXY_PACKAGE).run()));
+        CountDownLatch countDownLatch = new CountDownLatch(words.size());
+        words.forEach(word -> executor.execute(() -> {
+                try {
+                    new MapWorkerImpl(taskId, word, PROXY_PACKAGE).run();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }));
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            throw new CoordinatorException(e.getMessage());
+        }
     }
 
     private List<String> contentSpliterator(String fileName){
@@ -49,8 +109,9 @@ public class CoordinatorIml implements Coordinator {
         for (int i = 0; i < threadCount; i++) {
             StringBuilder sb = new StringBuilder();
             int start = pointer;
+            int count = words.size() / threadCount;
             if(words.size() - pointer > minCharForThreads) {
-                for (int j = start; j < (words.size() / threadCount) + start; j++) {
+                for (int j = start; j < count + start; j++) {
                     sb.append(" ").append(words.get(j)).append(" ");
                     pointer++;
                 }

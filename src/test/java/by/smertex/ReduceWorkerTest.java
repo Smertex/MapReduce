@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class ReduceWorkerTest {
     private static final String END_FILE_TEST = "end.txt";
 
-    private static final String PACKAGE_TEST = "test/e8b76b3f-4991-4ea8-a901-6c8665808c07";
+    private static final String PACKAGE_TEST = "proxy/9872cec9-556c-4395-89f9-c377906089e3";
 
     @Test
     void reduceTest() throws IOException {

@@ -1,6 +1,6 @@
 package by.smertex;
 
-import by.smertex.worker.realisation.MapMapWorkerImpl;
+import by.smertex.worker.realisation.MapWorkerImpl;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class MapWorkerTest {
 
     @Test
     void mapWorkerTest() throws IOException {
-        MapMapWorkerImpl mapWorkerImpl = new MapMapWorkerImpl(taskId, CONTENT_TEST, PACKAGE_TEST);
+        MapWorkerImpl mapWorkerImpl = new MapWorkerImpl(taskId, CONTENT_TEST, PACKAGE_TEST);
         Path directory = Path.of(PACKAGE_TEST + "/" + taskId + "/");
         Files.createDirectories(directory);
         mapWorkerImpl.run();
