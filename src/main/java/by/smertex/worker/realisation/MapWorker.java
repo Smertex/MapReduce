@@ -6,6 +6,8 @@ import by.smertex.worker.interfaces.Worker;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
@@ -55,9 +57,16 @@ public class MapWorker implements Worker {
     private void writeWordInMap(String word, Integer count){
         Path file = Path.of(endPath + "/" + taskId.toString() + "/" + hashCodeGenerate(word) + ".txt");
         try(FileChannel fileChannel = FileChannel.open(file, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND)){
-            fileChannel.lock();
+            FileLock lock = null;
+            while (lock == null){
+                try {
+                    lock = fileChannel.tryLock();
+                } catch (OverlappingFileLockException e) {
+                    Thread.sleep(50);
+                }
+            }
             fileChannel.write(ByteBuffer.wrap((word + ":" + count.toString() + "\n").getBytes()));
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new WriteToFileException(e.getMessage());
         }
     }
