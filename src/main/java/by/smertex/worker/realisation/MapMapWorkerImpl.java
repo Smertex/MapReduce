@@ -1,7 +1,7 @@
 package by.smertex.worker.realisation;
 
 import by.smertex.worker.exception.WriteToFileException;
-import by.smertex.worker.interfaces.Worker;
+import by.smertex.worker.interfaces.MapWorker;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MapWorker implements Worker {
+public class MapMapWorkerImpl implements MapWorker {
 
     private static final String CLEAN = "[^a-zA-Zа-яА-Я0-9\\s]";
 
@@ -87,7 +87,7 @@ public class MapWorker implements Worker {
         this.endPath = endPath;
     }
 
-    public MapWorker(UUID taskId, String content, String endPath) {
+    public MapMapWorkerImpl(UUID taskId, String content, String endPath) {
         this.taskId = taskId;
         this.content = content;
         this.endPath = endPath;

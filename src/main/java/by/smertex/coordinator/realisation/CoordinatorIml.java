@@ -2,7 +2,7 @@ package by.smertex.coordinator.realisation;
 
 import by.smertex.coordinator.interfaces.Coordinator;
 import by.smertex.reduce.exeception.ReadFileException;
-import by.smertex.worker.realisation.MapWorker;
+import by.smertex.worker.realisation.MapMapWorkerImpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,7 +38,7 @@ public class CoordinatorIml implements Coordinator {
     }
 
     private void mapAllocator(UUID taskId, List<String> words) {
-        words.forEach(word -> executor.execute(() -> new MapWorker(taskId, word, PROXY_PACKAGE).run()));
+        words.forEach(word -> executor.execute(() -> new MapMapWorkerImpl(taskId, word, PROXY_PACKAGE).run()));
     }
 
     private List<String> contentSpliterator(String fileName){
